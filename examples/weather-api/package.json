@@ -1,0 +1,22 @@
+{
+  "name": "example-weather-api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsup",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "fastify": "5.3.0",
+    "@onkova/sdk-server": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "6.0.2",
+    "tsx": "4.19.0",
+    "tsup": "8.4.0",
+    "@types/node": "22.14.0"
+  }
+}
+

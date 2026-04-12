@@ -1,0 +1,21 @@
+{
+  "name": "example-agent-consumer",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "build": "tsup",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@onkova/sdk-client": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "6.0.2",
+    "tsx": "4.19.0",
+    "tsup": "8.4.0",
+    "@types/node": "22.14.0"
+  }
+}
+
