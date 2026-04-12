@@ -1,0 +1,33 @@
+{
+  "name": "@onkova/sdk-client",
+  "version": "0.1.0",
+  "description": "Kova client SDK — fetch wrapper that auto-pays x402 paywalls on Stellar",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "lint": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo node_modules"
+  },
+  "dependencies": {
+    "@stellar/stellar-sdk": "13.1.0"
+  },
+  "devDependencies": {
+    "typescript": "6.0.2",
+    "tsup": "8.4.0",
+    "@types/node": "22.14.0"
+  }
+}
+
