@@ -1,0 +1,22 @@
+{
+  "name": "kova",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Kova — Protect APIs from AI Agents behind x402 paywalls on Stellar",
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "clean": "turbo run clean"
+  },
+  "devDependencies": {
+    "turbo": "2.5.0",
+    "typescript": "6.0.2"
+  },
+  "packageManager": "pnpm@10.8.1",
+  "engines": {
+    "node": ">=20"
+  }
+}
+
