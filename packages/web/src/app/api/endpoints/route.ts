@@ -1,8 +1,8 @@
 // TODO: CRUD for endpoint configurations
 export async function GET() {
-  return Response.json([]);
+  return Response.json([])
 }
 
 export async function POST() {
-  return new Response("Not implemented", { status: 501 });
+  return new Response("Not implemented", { status: 501 })
 }

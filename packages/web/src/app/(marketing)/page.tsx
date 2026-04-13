@@ -9,5 +9,5 @@ export default function LandingPage() {
       <h1>Kova</h1>
       <p>Monetize your API for the agent economy.</p>
     </div>
-  );
+  )
 }

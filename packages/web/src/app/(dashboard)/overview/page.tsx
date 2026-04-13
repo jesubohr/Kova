@@ -4,5 +4,5 @@ export default function OverviewPage() {
       {/* TODO: Revenue chart, recent txs, stats */}
       <h1>Overview</h1>
     </div>
-  );
+  )
 }

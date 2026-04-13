@@ -1,6 +1,6 @@
 {
   "name": "kova",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "private": true,
   "description": "Kova — Protect APIs from AI Agents behind x402 paywalls on Stellar",
   "scripts": {
@@ -8,9 +8,12 @@
     "dev": "turbo run dev",
     "lint": "turbo run lint",
     "test": "turbo run test",
-    "clean": "turbo run clean"
+    "clean": "turbo run clean",
+    "format": "prettier --write ."
   },
   "devDependencies": {
+    "dotenv": "17.4.2",
+    "prettier": "3.8.2",
     "turbo": "2.5.0",
     "typescript": "6.0.2"
   },
@@ -19,4 +22,3 @@
     "node": ">=20"
   }
 }
-

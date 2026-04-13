@@ -4,5 +4,5 @@ export default function SettingsPage() {
       {/* TODO: Account settings */}
       <h1>Settings</h1>
     </div>
-  );
+  )
 }

@@ -4,5 +4,5 @@ export default function WalletPage() {
       {/* TODO: Stellar address config, balance display */}
       <h1>Wallet</h1>
     </div>
-  );
+  )
 }

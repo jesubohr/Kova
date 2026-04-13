@@ -7,11 +7,7 @@
  * @param floorStroops - minimum fee in stroops
  * @returns fee amount in stroops (at least floorStroops)
  */
-export function calculateFee(
-  amount: bigint,
-  feePercent: number,
-  floorStroops: bigint
-): bigint {
-  const feeRaw = (amount * BigInt(Math.floor(feePercent * 1000))) / 100_000n;
-  return feeRaw < floorStroops ? floorStroops : feeRaw;
+export function calculateFee(amount: bigint, feePercent: number, floorStroops: bigint): bigint {
+  const feeRaw = (amount * BigInt(Math.floor(feePercent * 1000))) / 100_000n
+  return feeRaw < floorStroops ? floorStroops : feeRaw
 }

@@ -9,114 +9,134 @@ import {
   Contract,
   nativeToScVal,
   Address,
-} from '@stellar/stellar-sdk';
-import type { StellarNetwork } from '../types.js';
-import { getRpcServer } from './client.js';
+} from "@stellar/stellar-sdk"
+import type { StellarNetwork } from "../types.js"
+import { getRpcServer } from "./client.js"
 
 const NETWORK_PASSPHRASE: Record<StellarNetwork, string> = {
   testnet: Networks.TESTNET,
   mainnet: Networks.PUBLIC,
-};
+}
 
-const POLL_INTERVAL_MS = 3000;
-const MAX_POLL_ATTEMPTS = 20;
+const POLL_INTERVAL_MS = 3000
+const MAX_POLL_ATTEMPTS = 40
+
+// Per-account mutex: prevents txBadSeq when concurrent requests race on the same
+// facilitator account. Each new caller chains onto the tail of the queue; the lock
+// is released after sendTransaction (not after polling) so throughput is not blocked
+// by the 20×3 s confirmation wait.
+const accountMutexes = new Map<string, Promise<void>>()
+
+function withAccountLock<T>(publicKey: string, fn: () => Promise<T>): Promise<T> {
+  const prev = accountMutexes.get(publicKey) ?? Promise.resolve()
+  let release!: () => void
+  const slot = new Promise<void>((r) => {
+    release = r
+  })
+  accountMutexes.set(publicKey, slot)
+  // prev.then ensures serial execution; finally(release) unblocks the next waiter
+  // even when fn() throws, so a single failure never deadlocks the queue.
+  return prev.then(() => fn()).finally(release)
+}
 
 export interface SubmitTxOptions {
   /** The pre-signed SorobanAuthorizationEntry XDR (base64) from the client */
-  authEntryBase64: string;
+  authEntryBase64: string
   /** C... contract address of the token */
-  contractId: string;
+  contractId: string
   /** G... address of the payer (client) */
-  from: string;
+  from: string
   /** G... address of the recipient (API provider) */
-  payTo: string;
+  payTo: string
   /** Amount in stroops (bigint) */
-  amount: bigint;
+  amount: bigint
   /** Facilitator keypair — pays the fee */
-  facilitatorKeypair: Keypair;
-  network: StellarNetwork;
+  facilitatorKeypair: Keypair
+  network: StellarNetwork
 }
 
 export interface SubmitTxResult {
-  txHash: string;
+  txHash: string
 }
 
 /** Build, submit, and poll a Soroban token.transfer using a pre-authorized auth entry. */
 export async function submitTx(opts: SubmitTxOptions): Promise<SubmitTxResult> {
-  const { authEntryBase64, contractId, from, payTo, amount, facilitatorKeypair, network } = opts;
+  const { authEntryBase64, contractId, from, payTo, amount, facilitatorKeypair, network } = opts
 
-  const server = getRpcServer(network);
-  const networkPassphrase = NETWORK_PASSPHRASE[network];
+  const server = getRpcServer(network)
+  const networkPassphrase = NETWORK_PASSPHRASE[network]
 
-  // Load facilitator account (needs sequence number)
-  const facilitatorAccount = await server.getAccount(facilitatorKeypair.publicKey());
+  const authEntry = xdr.SorobanAuthorizationEntry.fromXDR(authEntryBase64, "base64")
 
-  // Build the token.transfer invocation
-  const contract = new Contract(contractId);
-  const fromScVal = new Address(from).toScVal();
-  const toScVal = new Address(payTo).toScVal();
-  const amountScVal = nativeToScVal(amount, { type: 'i128' });
+  const contract = new Contract(contractId)
+  const fromScVal = new Address(from).toScVal()
+  const toScVal = new Address(payTo).toScVal()
+  const amountScVal = nativeToScVal(amount, { type: "i128" })
+  const callOp = contract.call("transfer", fromScVal, toScVal, amountScVal)
 
-  const callOp = contract.call('transfer', fromScVal, toScVal, amountScVal);
+  // Hold the account lock only for getAccount → sendTransaction.
+  // Polling happens outside so a 60-second confirmation wait never blocks the next request.
+  const txHash = await withAccountLock(facilitatorKeypair.publicKey(), async () => {
+    const facilitatorAccount = await server.getAccount(facilitatorKeypair.publicKey())
 
-  const tx = new TransactionBuilder(facilitatorAccount, {
-    fee: String(Number(BASE_FEE) * 10), // 10x base fee for priority
-    networkPassphrase,
+    const baseTx = new TransactionBuilder(facilitatorAccount, {
+      fee: String(Number(BASE_FEE) * 10),
+      networkPassphrase,
+    })
+      .addOperation(callOp)
+      .setTimeout(180)
+      .build()
+
+    // Inject auth BEFORE simulation so the footprint includes the auth nonce ledger key.
+    // toEnvelope() returns a new XDR copy each call — must rebuild Transaction from the
+    // mutated envelope, otherwise the simulation receives a tx with no auth.
+    const simEnvelope = baseTx.toEnvelope()
+    simEnvelope.v1().tx().operations()[0].body().invokeHostFunctionOp().auth([authEntry])
+    const txForSim = new Transaction(simEnvelope, networkPassphrase)
+
+    const simResult = await server.simulateTransaction(txForSim)
+    if (!rpc.Api.isSimulationSuccess(simResult)) {
+      throw new Error(`Simulation failed: ${JSON.stringify(simResult)}`)
+    }
+
+    // assembleTransaction sets Soroban resource fees/footprint but may replace auth
+    // with unsigned placeholders — re-inject the signed entry below.
+    const assembled = rpc.assembleTransaction(txForSim, simResult).build()
+
+    const txEnvelope = assembled.toEnvelope()
+    txEnvelope.v1().tx().operations()[0].body().invokeHostFunctionOp().auth([authEntry])
+
+    const finalTx = new Transaction(txEnvelope, networkPassphrase)
+    finalTx.sign(facilitatorKeypair)
+
+    const sendResult = await server.sendTransaction(finalTx)
+    if (sendResult.status === "ERROR") {
+      const errDetail = sendResult.errorResult ? JSON.stringify(sendResult.errorResult) : "unknown error"
+      throw new Error(`Transaction rejected: ${errDetail}`)
+    }
+    if (sendResult.status === "TRY_AGAIN_LATER") {
+      throw new Error(`Stellar node throttled — transaction not submitted, try again later`)
+    }
+
+    return sendResult.hash
   })
-    .addOperation(callOp)
-    .setTimeout(30)
-    .build();
 
-  // Simulate to get resource estimates
-  const simResult = await server.simulateTransaction(tx);
-  if (!rpc.Api.isSimulationSuccess(simResult)) {
-    throw new Error(`Simulation failed: ${JSON.stringify(simResult)}`);
-  }
-
-  // Assemble the transaction with simulation data (sets Soroban resource fees, footprint, etc.)
-  const assembled = rpc.assembleTransaction(tx, simResult).build();
-
-  // Decode the client's pre-authorized auth entry
-  const authEntry = xdr.SorobanAuthorizationEntry.fromXDR(authEntryBase64, 'base64');
-
-  // Inject client's auth entry into the assembled tx (replace simulation auth with client's signed auth)
-  const txEnvelope = assembled.toEnvelope();
-  txEnvelope
-    .v1()
-    .tx()
-    .operations()[0]
-    .body()
-    .invokeHostFunctionOp()
-    .auth([authEntry]);
-
-  // Rebuild Transaction from the mutated envelope so signing works correctly
-  const finalTx = new Transaction(txEnvelope, networkPassphrase);
-  finalTx.sign(facilitatorKeypair);
-
-  // Submit
-  const sendResult = await server.sendTransaction(finalTx);
-  if (sendResult.status === 'ERROR') {
-    const errDetail = sendResult.errorResult
-      ? JSON.stringify(sendResult.errorResult)
-      : 'unknown error';
-    throw new Error(`Transaction rejected: ${errDetail}`);
-  }
-
-  const txHash = sendResult.hash;
-
-  // Poll for confirmation
+  // Poll outside the lock — does not touch the sequence number.
   for (let i = 0; i < MAX_POLL_ATTEMPTS; i++) {
-    await new Promise<void>(r => setTimeout(r, POLL_INTERVAL_MS));
-    const getResult = await server.getTransaction(txHash);
+    await new Promise<void>((r) => setTimeout(r, POLL_INTERVAL_MS))
+    const getResult = await server.getTransaction(txHash)
 
     if (getResult.status === rpc.Api.GetTransactionStatus.SUCCESS) {
-      return { txHash };
+      return { txHash }
     }
     if (getResult.status === rpc.Api.GetTransactionStatus.FAILED) {
-      throw new Error(`Transaction failed on-chain: ${txHash}`);
+      const resultB64 = getResult.resultXdr.toXDR("base64")
+      const diagnostics = getResult.diagnosticEventsXdr?.map((e) => e.toXDR("base64")).join(", ")
+      const detail = diagnostics ? ` | diagnostics: ${diagnostics}` : ""
+      throw new Error(`Transaction failed on-chain: ${txHash} | result: ${resultB64}${detail}`)
     }
     // NOT_FOUND = still pending, keep polling
   }
 
-  throw new Error(`Transaction not confirmed after ${MAX_POLL_ATTEMPTS} attempts: ${txHash}`);
+  throw new Error(`Transaction not confirmed after ${MAX_POLL_ATTEMPTS} attempts: ${txHash}`)
 }

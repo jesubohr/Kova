@@ -4,5 +4,5 @@ export default function TransactionsPage() {
       {/* TODO: Paginated tx table, filters, CSV export */}
       <h1>Transactions</h1>
     </div>
-  );
+  )
 }

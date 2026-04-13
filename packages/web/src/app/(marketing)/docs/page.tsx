@@ -4,5 +4,5 @@ export default function DocsPage() {
       {/* TODO: Quick-start docs */}
       <h1>Documentation</h1>
     </div>
-  );
+  )
 }

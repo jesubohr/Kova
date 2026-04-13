@@ -1,9 +1,11 @@
 # Ignore artifacts:
-.vscode
 node_modules
 public
 dist
+.turbo
 pnpm-lock.yaml
 pnpm-workspace.yaml
 .env
+.env.example
+Dockerfile
 *.md

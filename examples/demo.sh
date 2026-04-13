@@ -26,11 +26,27 @@ if [ ${#MISSING[@]} -gt 0 ]; then
   exit 1
 fi
 
+# --- Kill any process listening on a given port (cross-platform) ---
+kill_port() {
+  local port=$1
+  if command -v lsof >/dev/null 2>&1; then
+    lsof -ti:"$port" 2>/dev/null | xargs -r kill -9 2>/dev/null || true
+  elif command -v fuser >/dev/null 2>&1; then
+    fuser -k "${port}/tcp" 2>/dev/null || true
+  fi
+}
+
 # --- Cleanup trap ---
 cleanup() {
   echo ""
   echo "=== Cleaning up ==="
   kill "$FACILITATOR_PID" "$WEATHER_PID" 2>/dev/null || true
+  # Wait for both processes to fully exit before continuing so their output
+  # does not bleed into the parent shell prompt.
+  wait "$FACILITATOR_PID" "$WEATHER_PID" 2>/dev/null || true
+  # pnpm spawns child Node processes that inherit the port; kill those too.
+  kill_port 4021
+  kill_port 4022
   echo "Done."
 }
 trap cleanup EXIT

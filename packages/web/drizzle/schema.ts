@@ -1,11 +1,4 @@
-import {
-  pgTable,
-  text,
-  timestamp,
-  boolean,
-  numeric,
-  pgEnum,
-} from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, numeric, pgEnum } from "drizzle-orm/pg-core"
 
 // ---------------------------------------------------------------------------
 // BetterAuth required tables
@@ -20,7 +13,7 @@ export const user = pgTable("user", {
   stellarAddress: text("stellar_address"),
   createdAt: timestamp("created_at").notNull(),
   updatedAt: timestamp("updated_at").notNull(),
-});
+})
 
 export const session = pgTable("session", {
   id: text("id").primaryKey(),
@@ -33,7 +26,7 @@ export const session = pgTable("session", {
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
-});
+})
 
 export const account = pgTable("account", {
   id: text("id").primaryKey(),
@@ -51,7 +44,7 @@ export const account = pgTable("account", {
   password: text("password"),
   createdAt: timestamp("created_at").notNull(),
   updatedAt: timestamp("updated_at").notNull(),
-});
+})
 
 export const verification = pgTable("verification", {
   id: text("id").primaryKey(),
@@ -60,24 +53,15 @@ export const verification = pgTable("verification", {
   expiresAt: timestamp("expires_at").notNull(),
   createdAt: timestamp("created_at"),
   updatedAt: timestamp("updated_at"),
-});
+})
 
 // ---------------------------------------------------------------------------
 // Application tables
 // ---------------------------------------------------------------------------
 
-export const endpointMethodEnum = pgEnum("endpoint_method", [
-  "GET",
-  "POST",
-  "PUT",
-  "PATCH",
-  "DELETE",
-]);
+export const endpointMethodEnum = pgEnum("endpoint_method", ["GET", "POST", "PUT", "PATCH", "DELETE"])
 
-export const endpointStatusEnum = pgEnum("endpoint_status", [
-  "active",
-  "paused",
-]);
+export const endpointStatusEnum = pgEnum("endpoint_status", ["active", "paused"])
 
 export const endpoints = pgTable("endpoints", {
   id: text("id").primaryKey(),
@@ -91,13 +75,9 @@ export const endpoints = pgTable("endpoints", {
   status: endpointStatusEnum("status").notNull().default("active"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
+})
 
-export const transactionStatusEnum = pgEnum("transaction_status", [
-  "pending",
-  "settled",
-  "failed",
-]);
+export const transactionStatusEnum = pgEnum("transaction_status", ["pending", "settled", "failed"])
 
 export const transactions = pgTable("transactions", {
   id: text("id").primaryKey(),
@@ -112,7 +92,7 @@ export const transactions = pgTable("transactions", {
   txHash: text("tx_hash"),
   status: transactionStatusEnum("status").notNull().default("pending"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
-});
+})
 
 export const apiKeys = pgTable("api_keys", {
   id: text("id").primaryKey(),
@@ -125,4 +105,4 @@ export const apiKeys = pgTable("api_keys", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
   lastUsedAt: timestamp("last_used_at"),
   revokedAt: timestamp("revoked_at"),
-});
+})
