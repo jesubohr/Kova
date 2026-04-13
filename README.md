@@ -1,9 +1,11 @@
 # Kova (onkova.com) — Technical Specification
 
-## Platform for Protecting APIs from AI Agents Behind x402 Paywalls on Stellar
+![Kova Logo](docs/kova-logo-long.png)
 
-**Version:** 1.0 — April 2026
-**Purpose:** Construction guide for Claude Code to build all Kova packages
+### The Platform for Protecting APIs from AI Agents Behind x402 Paywalls on Stellar
+
+**Version:** 1.0 — April 2026\
+**Purpose:** Construction guide for Claude Code to build all Kova packages\
 **Stack:** Next.js · Node/Fastify · PostgreSQL · Stellar/Soroban · x402 Protocol
 
 ---
