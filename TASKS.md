@@ -148,34 +148,44 @@
 
 ### Types & Config
 
-- [ ] Define `KovaClientOptions` interface — stellarSecret, network, maxPaymentPerRequest, maxPaymentPerMinute, budget
-- [ ] Define `BudgetConfig` interface — maxPerRequest, maxPerHour, maxPerDay, onBudgetExceeded
-- [ ] Define x402 client types in `src/x402/types.ts` — PaymentRequirements, PaymentPayload
-- [ ] Define wallet types in `src/wallet/types.ts` — WalletConfig, SignedAuthEntry
+- [x] Define `KovaClientOptions` interface — stellarSecret, network, maxPaymentPerRequest, maxPaymentPerMinute, budget
+- [x] Define `BudgetConfig` interface — maxPerRequest, maxPerHour, maxPerDay, onBudgetExceeded
+- [x] Define x402 client types in `src/x402/types.ts` — PaymentRequirements, PaymentPayload
+- [x] Define wallet types in `src/wallet/types.ts` — WalletConfig, SignedAuthEntry
 
 ### Wallet & Signing
 
-- [ ] Implement Stellar wallet in `src/wallet/stellar.ts` — keypair from secret, Soroban auth entry signing
-- [ ] Build Soroban auth entry: token.transfer(from, to, amount), set max_ledger (~12 ledgers), sign with keypair
+- [x] Implement Stellar wallet in `src/wallet/stellar.ts` — keypair from secret, Soroban auth entry signing
+- [x] Build Soroban auth entry: token.transfer(from, to, amount), set max_ledger (~12 ledgers), sign with keypair
 
 ### x402 Flow
 
-- [ ] Implement 402 response parser in `src/x402/parse-402.ts` — extract scheme, network, price, payTo, asset, facilitator
-- [ ] Implement payment payload builder in `src/x402/build-payment.ts` — encode signed auth entry as base64 PaymentPayload
+- [x] Implement 402 response parser in `src/x402/parse-402.ts` — extract scheme, network, price, payTo, asset, facilitator
+- [x] Implement payment payload builder in `src/x402/build-payment.ts` — encode signed auth entry as base64 PaymentPayload
 
 ### Client Class
 
-- [ ] Implement `KovaClient` class in `src/client.ts`:
-  - [ ] `fetch(url, options)` — standard fetch, detect 402, auto-pay, retry
-  - [ ] `fetchAll(urls)` — batch requests with concurrent payments
-  - [ ] `getSpending()` — return totalSpent, requestsCount, lastPayment
-  - [ ] Budget enforcement — check limits before paying, throw `BudgetExceededError` if over
-- [ ] Export `KovaClient` from `src/index.ts`
+- [x] Implement `KovaClient` class in `src/client.ts`:
+  - [x] `fetch(url, options)` — standard fetch, detect 402, auto-pay, retry
+  - [x] `fetchAll(urls)` — batch requests with concurrent payments
+  - [x] `getSpending()` — return totalSpent, requestsCount, lastPayment
+  - [x] Budget enforcement — check limits before paying, throw `BudgetExceededError` if over
+- [x] Export `KovaClient` from `src/index.ts`
 
 ### Build & Publish
 
-- [ ] Verify tsup build produces correct ESM output with types
+- [x] Verify tsup build produces correct ESM output with types
 - [ ] Test against a running sdk-server instance — verify full 402 → pay → success flow
+
+### Tests (added)
+
+- [x] Add vitest test infrastructure — `src/tests/` dir, `pnpm test` script
+- [x] Test utils — `decimalToStroops`, `encodePaymentHeader`, `decodePaymentHeader` (8 tests)
+- [x] Test parse-402 — validation + error cases (8 tests)
+- [x] Test build-payment — payload assembly (2 tests)
+- [x] Test stellar wallet — mock RPC, verify XDR structure (3 tests)
+- [x] Test KovaClient — 402 flow, spending tracking, budget enforcement (6 tests)
+- [x] Test BudgetExceededError — callback + error fields (2 tests)
 
 ---
 
@@ -200,7 +210,8 @@
 
 ## Cross-Cutting
 
-- [ ] Run `pnpm install` at root — verify all workspace packages resolve
+- [x] Run `pnpm install` at root — verify all workspace packages resolve
 - [ ] Run `pnpm build` — verify all packages compile
+- [x] Fix `tsconfig.base.json` — add `ignoreDeprecations: "6.0"` for TypeScript 6 compatibility (DTS build was broken across all packages)
 - [ ] Test end-to-end on Stellar testnet (facilitator + sdk-server + sdk-client + dashboard)
 - [ ] Seed database with sample data for dashboard demo
