@@ -193,17 +193,17 @@
 
 ### weather-api
 
-- [ ] Implement example Fastify server in `src/index.ts` — one `/api/weather` endpoint protected via `@onkova/sdk-server`
-- [ ] Return mock weather data `{ weather: 'sunny', temp: 72 }` when paid
+- [x] Implement example Fastify server in `src/index.ts` — one `/api/weather` endpoint protected via `@onkova/sdk-server`
+- [x] Return mock weather data `{ weather: 'sunny', temp: 72 }` when paid
 
 ### agent-consumer
 
-- [ ] Implement example agent script in `src/index.ts` — use `KovaClient` to call weather API, print response
-- [ ] Show spending summary after request
+- [x] Implement example agent script in `src/index.ts` — use `KovaClient` to call weather API, print response
+- [x] Show spending summary after request
 
 ### Demo Script
 
-- [ ] Make `demo.sh` executable and test on Windows (Git Bash / WSL)
+- [x] Make `demo.sh` executable and test on Windows (Git Bash / WSL)
 - [ ] Verify end-to-end flow: facilitator starts → weather API starts → agent pays → data returned
 
 ---
