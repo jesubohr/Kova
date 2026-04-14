@@ -30,7 +30,12 @@ export async function POST(request: Request) {
   const session = await auth.api.getSession({ headers: await headers() })
   if (!session) return new Response("Unauthorized", { status: 401 })
 
-  const body = await request.json() as { address?: unknown }
+  let body: { address?: unknown }
+  try {
+    body = await request.json() as { address?: unknown }
+  } catch {
+    return new Response("Invalid request body", { status: 400 })
+  }
   const { address } = body
 
   if (typeof address !== "string" || !address.trim()) {
