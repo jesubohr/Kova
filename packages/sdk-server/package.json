@@ -1,6 +1,6 @@
 {
   "name": "@onkova/sdk-server",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Kova server SDK — Fastify/Express middleware for x402 API paywalls on Stellar",
   "type": "module",
   "main": "./dist/index.js",

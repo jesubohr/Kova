@@ -1,6 +1,6 @@
 {
   "name": "@onkova/sdk-client",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Kova client SDK — fetch wrapper that auto-pays x402 paywalls on Stellar",
   "type": "module",
   "main": "./dist/index.js",
