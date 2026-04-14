@@ -32,10 +32,10 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     .update(endpoints)
     .set({
       ...(method && { method: method as "GET" | "POST" | "PUT" | "PATCH" | "DELETE" }),
-      ...(path && { path }),
+      ...(path !== undefined && path.trim() !== "" && { path: path.trim() }),
       ...(priceNum !== undefined && { price: String(priceNum) }),
       ...(description !== undefined && { description }),
-      ...(status && { status: status as "active" | "paused" }),
+      ...(status !== undefined && { status: status === "paused" ? "paused" : "active" as const }),
       updatedAt: new Date(),
     })
     .where(and(eq(endpoints.id, id), eq(endpoints.userId, session.user.id)))

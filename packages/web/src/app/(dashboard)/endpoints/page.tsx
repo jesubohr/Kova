@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { Plus, Pencil, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -38,12 +38,12 @@ export default function EndpointsPage() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState("")
 
-  useEffect(() => { load() }, [])
-
-  async function load() {
+  const load = useCallback(async () => {
     const rows = await fetch("/api/endpoints").then((r) => r.json()).catch(() => [])
     setEndpoints(Array.isArray(rows) ? rows : [])
-  }
+  }, [])
+
+  useEffect(() => { load() }, [load])
 
   function openCreate() { setEditing(null); setForm(emptyForm); setError(""); setShowDialog(true) }
   function openEdit(ep: Endpoint) {
@@ -73,9 +73,17 @@ export default function EndpointsPage() {
 
   async function handleDelete() {
     if (!deleteId) return
-    await fetch(`/api/endpoints/${deleteId}`, { method: "DELETE" }).catch(console.error)
-    setDeleteId(null)
-    load()
+    try {
+      const res = await fetch(`/api/endpoints/${deleteId}`, { method: "DELETE" })
+      if (!res.ok) {
+        console.error("Delete failed:", res.status)
+        return
+      }
+      setDeleteId(null)
+      load()
+    } catch {
+      console.error("Delete request failed")
+    }
   }
 
   return (
