@@ -198,4 +198,4 @@ The asset used is determined by the server's 402 response — the client pays wh
 
 ## License
 
-MIT
+Apache-2.0 — see [LICENSE](../../LICENSE) for details.
