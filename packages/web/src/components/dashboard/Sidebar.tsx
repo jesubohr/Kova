@@ -20,8 +20,8 @@ export function Sidebar() {
   const router = useRouter()
 
   async function handleSignOut() {
-    await authClient.signOut()
-    router.push("/login")
+    const { error } = await authClient.signOut()
+    if (!error) router.push("/login")
   }
 
   return (
@@ -48,6 +48,7 @@ export function Sidebar() {
       </nav>
       <div className="p-3 border-t border-white/10">
         <button
+          type="button"
           onClick={handleSignOut}
           className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-white/50 hover:bg-white/5 hover:text-white transition-colors"
         >
