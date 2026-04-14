@@ -16,11 +16,14 @@ export default function SettingsPage() {
 
   useEffect(() => {
     fetch("/api/settings")
-      .then((r) => (r.ok ? r.json() : null))
+      .then((r) => {
+        if (!r.ok) { setError("Failed to load settings."); return null }
+        return r.json()
+      })
       .then((d) => {
         if (d) { setName(d.name ?? ""); setEmail(d.email ?? "") }
       })
-      .catch(console.error)
+      .catch(() => setError("Failed to load settings."))
       .finally(() => setLoading(false))
   }, [])
 

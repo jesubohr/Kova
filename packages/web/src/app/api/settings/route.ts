@@ -37,6 +37,10 @@ export async function PATCH(request: Request) {
 
   const trimmedName = name.trim()
 
+  if (trimmedName.length > 100) {
+    return new Response("name must be 100 characters or fewer", { status: 400 })
+  }
+
   await db
     .update(user)
     .set({ name: trimmedName, updatedAt: new Date() })
