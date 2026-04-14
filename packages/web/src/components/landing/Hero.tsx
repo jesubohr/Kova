@@ -35,9 +35,9 @@ export function Hero() {
         </div>
         <div className="mx-auto max-w-2xl rounded-xl border border-white/10 bg-white/5 p-4 text-left">
           <div className="flex items-center gap-2 mb-3">
-            <span className="h-3 w-3 rounded-full bg-red-500/70" />
-            <span className="h-3 w-3 rounded-full bg-yellow-500/70" />
-            <span className="h-3 w-3 rounded-full bg-green-500/70" />
+            <span aria-hidden="true" className="h-3 w-3 rounded-full bg-red-500/70" />
+            <span aria-hidden="true" className="h-3 w-3 rounded-full bg-yellow-500/70" />
+            <span aria-hidden="true" className="h-3 w-3 rounded-full bg-green-500/70" />
             <span className="ml-2 text-xs text-white/30">server.ts</span>
           </div>
           <pre className="text-sm text-white/80 overflow-x-auto">

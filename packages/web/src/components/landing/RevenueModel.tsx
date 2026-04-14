@@ -1,4 +1,4 @@
-const props = [
+const features = [
   { title: "Pay per request", description: "Charge $0.001 or less per call. Agents pay exactly what they use — no wasted budget." },
   { title: "No subscription overhead", description: "Skip billing systems, credit cards, and churn management. Every request self-settles." },
   { title: "Sub-cent precision", description: "Stellar supports 7 decimal places. Price your API at fractions of a cent with no rounding loss." },
@@ -14,10 +14,10 @@ export function RevenueModel() {
           AI agents make thousands of API calls. Traditional billing doesn't scale. Kova does.
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {props.map((p) => (
-            <div key={p.title} className="rounded-xl border border-white/10 bg-white/5 p-6">
-              <h3 className="text-lg font-semibold text-white mb-2">{p.title}</h3>
-              <p className="text-white/50 text-sm leading-relaxed">{p.description}</p>
+          {features.map((feature) => (
+            <div key={feature.title} className="rounded-xl border border-white/10 bg-white/5 p-6">
+              <h3 className="text-lg font-semibold text-white mb-2">{feature.title}</h3>
+              <p className="text-white/50 text-sm leading-relaxed">{feature.description}</p>
             </div>
           ))}
         </div>

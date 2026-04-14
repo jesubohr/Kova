@@ -14,7 +14,7 @@ export function Navbar() {
           <Link href="/docs" className="hover:text-white transition-colors">Docs</Link>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" render={<Link href="/login" className="text-white/70 hover:text-white" />}>
+          <Button variant="ghost" size="sm" render={<Link href="/login" />}>
             Log in
           </Button>
           <Button size="sm" render={<Link href="/signup" />}>

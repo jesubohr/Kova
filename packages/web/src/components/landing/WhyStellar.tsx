@@ -14,11 +14,11 @@ export function WhyStellar() {
           Not all blockchains are equal for payments. Stellar was built for this.
         </p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {reasons.map((r) => (
-            <div key={r.label} className="rounded-xl border border-white/10 bg-white/5 p-6 text-center">
-              <div className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-br from-blue-400 to-cyan-400 mb-1">{r.stat}</div>
-              <div className="text-white font-medium mb-2">{r.label}</div>
-              <p className="text-white/40 text-xs leading-relaxed">{r.detail}</p>
+          {reasons.map((reason) => (
+            <div key={reason.label} className="rounded-xl border border-white/10 bg-white/5 p-6 text-center">
+              <div className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-br from-blue-400 to-cyan-400 mb-1">{reason.stat}</div>
+              <div className="text-white font-medium mb-2">{reason.label}</div>
+              <p className="text-white/40 text-xs leading-relaxed">{reason.detail}</p>
             </div>
           ))}
         </div>
