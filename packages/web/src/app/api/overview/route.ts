@@ -2,7 +2,7 @@ import { headers } from "next/headers"
 import { auth } from "@/lib/auth"
 import { db } from "@/lib/db"
 import { transactions } from "../../../../drizzle/schema"
-import { eq, sum, count, sql } from "drizzle-orm"
+import { eq, sum, count, gte, and, sql } from "drizzle-orm"
 
 export async function GET() {
   const session = await auth.api.getSession({ headers: await headers() })
@@ -19,7 +19,7 @@ export async function GET() {
   const [last30d] = await db
     .select({ revenue: sum(transactions.amount), txCount: count() })
     .from(transactions)
-    .where(sql`${transactions.userId} = ${userId} AND ${transactions.createdAt} >= ${thirtyDaysAgo}`)
+    .where(and(eq(transactions.userId, userId), gte(transactions.createdAt, thirtyDaysAgo)))
 
   const daily = await db
     .select({
@@ -27,7 +27,7 @@ export async function GET() {
       revenue: sum(transactions.amount),
     })
     .from(transactions)
-    .where(sql`${transactions.userId} = ${userId} AND ${transactions.createdAt} >= ${thirtyDaysAgo}`)
+    .where(and(eq(transactions.userId, userId), gte(transactions.createdAt, thirtyDaysAgo)))
     .groupBy(sql`DATE(${transactions.createdAt})`)
     .orderBy(sql`DATE(${transactions.createdAt})`)
 

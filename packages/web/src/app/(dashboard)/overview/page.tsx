@@ -35,8 +35,8 @@ export default function OverviewPage() {
   const [recentTxs, setRecentTxs] = useState<RecentTx[]>([])
 
   useEffect(() => {
-    fetch("/api/overview").then((r) => r.json()).then(setStats)
-    fetch("/api/transactions?limit=10").then((r) => r.json()).then((d) => setRecentTxs(d.rows ?? []))
+    fetch("/api/overview").then((r) => r.json()).then(setStats).catch(console.error)
+    fetch("/api/transactions?limit=10").then((r) => r.json()).then((d) => setRecentTxs(d.rows ?? [])).catch(console.error)
   }, [])
 
   const chartData = stats?.dailyRevenue.map((d) => ({
@@ -106,7 +106,7 @@ export default function OverviewPage() {
                 <tr key={tx.id} className="border-b border-white/5 text-white/70">
                   <td className="py-2">{tx.endpointMethod} {tx.endpointPath ?? "—"}</td>
                   <td className="py-2">${parseFloat(tx.amount).toFixed(4)}</td>
-                  <td className="py-2 font-mono text-xs">{tx.payerAddress.slice(0, 8)}…</td>
+                  <td className="py-2 font-mono text-xs">{(tx.payerAddress ?? "").slice(0, 8) || "—"}…</td>
                   <td className="py-2">
                     <Badge variant={statusVariant[tx.status]}>{tx.status}</Badge>
                   </td>

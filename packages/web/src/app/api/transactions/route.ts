@@ -2,7 +2,7 @@ import { headers } from "next/headers"
 import { auth } from "@/lib/auth"
 import { db } from "@/lib/db"
 import { transactions, endpoints } from "../../../../drizzle/schema"
-import { eq, desc, and, sql } from "drizzle-orm"
+import { eq, desc, and, sql, SQL } from "drizzle-orm"
 
 export async function GET(request: Request) {
   const session = await auth.api.getSession({ headers: await headers() })
@@ -10,19 +10,35 @@ export async function GET(request: Request) {
 
   const userId = session.user.id
   const { searchParams } = new URL(request.url)
-  const limit = Math.min(parseInt(searchParams.get("limit") ?? "50"), 100)
-  const offset = parseInt(searchParams.get("offset") ?? "0")
+
+  const rawLimit = parseInt(searchParams.get("limit") ?? "50")
+  const limit = Math.min(isNaN(rawLimit) ? 50 : rawLimit, 100)
+  const rawOffset = parseInt(searchParams.get("offset") ?? "0")
+  const offset = isNaN(rawOffset) ? 0 : rawOffset
+
   const endpointId = searchParams.get("endpointId")
   const statusFilter = searchParams.get("status")
-  const from = searchParams.get("from")
-  const to = searchParams.get("to")
+  const fromParam = searchParams.get("from")
+  const toParam = searchParams.get("to")
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const conditions: any[] = [eq(transactions.userId, userId)]
-  if (endpointId) conditions.push(eq(transactions.endpointId, endpointId))
-  if (statusFilter) conditions.push(eq(transactions.status, statusFilter as "pending" | "settled" | "failed"))
-  if (from) conditions.push(sql`${transactions.createdAt} >= ${new Date(from)}`)
-  if (to) conditions.push(sql`${transactions.createdAt} <= ${new Date(to)}`)
+  function parseDate(value: string): Date | null {
+    const d = new Date(value)
+    return isNaN(d.getTime()) ? null : d
+  }
+
+  const fromDate = fromParam ? parseDate(fromParam) : null
+  const toDate = toParam ? parseDate(toParam) : null
+
+  if (fromParam && !fromDate) return new Response("Invalid 'from' date", { status: 400 })
+  if (toParam && !toDate) return new Response("Invalid 'to' date", { status: 400 })
+
+  const conditions: (SQL<unknown> | undefined)[] = [
+    eq(transactions.userId, userId),
+    endpointId ? eq(transactions.endpointId, endpointId) : undefined,
+    statusFilter ? eq(transactions.status, statusFilter as "pending" | "settled" | "failed") : undefined,
+    fromDate ? sql`${transactions.createdAt} >= ${fromDate}` : undefined,
+    toDate ? sql`${transactions.createdAt} <= ${toDate}` : undefined,
+  ]
 
   const rows = await db
     .select({
