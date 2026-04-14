@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth"
 import { db } from "@/lib/db"
 import { apiKeys } from "../../../../drizzle/schema"
 import { eq, isNull, and } from "drizzle-orm"
-import { randomBytes, createHash } from "crypto"
+import { randomBytes, randomUUID, createHash } from "crypto"
 
 export async function GET() {
   const session = await auth.api.getSession({ headers: await headers() })
@@ -28,10 +28,14 @@ export async function POST(request: Request) {
   const session = await auth.api.getSession({ headers: await headers() })
   if (!session) return new Response("Unauthorized", { status: 401 })
 
-  const body = await request.json() as { name?: string }
+  const body = await request.json() as { name?: unknown }
   const { name } = body
 
-  if (!name?.trim()) return new Response("name required", { status: 400 })
+  if (typeof name !== "string" || !name.trim()) {
+    return new Response("name must be a non-empty string", { status: 400 })
+  }
+
+  const trimmedName = name.trim()
 
   const rawKey = "kova_" + randomBytes(16).toString("hex")
   const prefix = rawKey.substring(0, 12)
@@ -40,9 +44,9 @@ export async function POST(request: Request) {
   const [created] = await db
     .insert(apiKeys)
     .values({
-      id: randomBytes(8).toString("hex"),
+      id: randomUUID(),
       userId: session.user.id,
-      name: name.trim(),
+      name: trimmedName,
       prefix,
       hash,
     })

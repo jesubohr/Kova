@@ -30,8 +30,14 @@ export default function ApiKeysPage() {
   const load = useCallback(async () => {
     setFetchError(null)
     try {
-      const rows = await fetch("/api/api-keys").then((r) => r.json())
-      setKeys(Array.isArray(rows) ? rows : [])
+      const res = await fetch("/api/api-keys")
+      if (!res.ok) {
+        setFetchError("Failed to load API keys.")
+        setKeys([])
+        return
+      }
+      const rows = await res.json() as unknown
+      setKeys(Array.isArray(rows) ? (rows as ApiKey[]) : [])
     } catch {
       setFetchError("Failed to load API keys.")
     }
@@ -49,7 +55,11 @@ export default function ApiKeysPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name }),
       })
-      if (!res.ok) { setGenerateError(await res.text()); return }
+      if (!res.ok) {
+        const msg = await res.text()
+        setGenerateError(msg.length > 100 ? "An error occurred. Please try again." : msg)
+        return
+      }
       const data = await res.json() as { key: string }
       setNewKey(data.key)
       setName("")
