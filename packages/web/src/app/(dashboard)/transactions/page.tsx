@@ -33,17 +33,23 @@ export default function TransactionsPage() {
   const [status, setStatus] = useState("")
   const [from, setFrom] = useState("")
   const [to, setTo] = useState("")
+  const [fetchError, setFetchError] = useState<string | null>(null)
 
   const load = useCallback(async (off: number) => {
+    setFetchError(null)
     const params = new URLSearchParams({ limit: String(PAGE_SIZE), offset: String(off) })
     if (status) params.set("status", status)
     if (from) params.set("from", from)
     if (to) params.set("to", to)
-    const data = await fetch(`/api/transactions?${params}`)
-      .then((r) => r.json())
-      .catch(() => ({ rows: [] }))
-    setRows(data.rows ?? [])
-    setHasMore((data.rows ?? []).length === PAGE_SIZE)
+    try {
+      const data = await fetch(`/api/transactions?${params}`).then((r) => r.json())
+      setRows(data.rows ?? [])
+      setHasMore((data.rows ?? []).length === PAGE_SIZE)
+    } catch {
+      setFetchError("Failed to load transactions. Please try again.")
+      setRows([])
+      setHasMore(false)
+    }
   }, [status, from, to])
 
   useEffect(() => {
@@ -114,6 +120,8 @@ export default function TransactionsPage() {
         </div>
       </div>
 
+      {fetchError && <p role="alert" className="text-red-400 text-sm">{fetchError}</p>}
+
       <Card className="bg-white/5 border-white/10">
         <CardContent className="p-0">
           <table className="w-full text-sm">
@@ -137,7 +145,7 @@ export default function TransactionsPage() {
                   <td className="p-4">
                     {tx.txHash ? (
                       <a
-                        href={`https://stellar.expert/explorer/testnet/tx/${tx.txHash}`}
+                        href={`https://stellar.expert/explorer/${process.env.NEXT_PUBLIC_STELLAR_NETWORK ?? "testnet"}/tx/${tx.txHash}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="font-mono text-xs text-blue-400 hover:underline"
