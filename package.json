@@ -9,7 +9,10 @@
     "lint": "turbo run lint",
     "test": "turbo run test",
     "clean": "turbo run clean",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "publish:client": "pnpm --filter @onkova/sdk-client build && cd packages/sdk-client && npm publish --access public",
+    "publish:server": "pnpm --filter @onkova/sdk-server build && cd packages/sdk-server && npm publish --access public",
+    "publish:all": "pnpm run publish:client && pnpm run publish:server"
   },
   "devDependencies": {
     "dotenv": "17.4.2",
