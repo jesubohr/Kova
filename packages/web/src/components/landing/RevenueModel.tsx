@@ -11,7 +11,7 @@ export function RevenueModel() {
       <div className="mx-auto max-w-6xl">
         <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-4">Built for the agent economy</h2>
         <p className="text-white/50 text-center mb-16 max-w-xl mx-auto">
-          AI agents make thousands of API calls. Traditional billing doesn't scale. Kova does.
+          AI agents make thousands of API calls. Traditional billing doesn&apos;t scale. Kova does.
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {features.map((feature) => (

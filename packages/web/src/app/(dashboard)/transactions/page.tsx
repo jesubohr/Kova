@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useState } from "react"
 import { Download } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -35,38 +35,35 @@ export default function TransactionsPage() {
   const [to, setTo] = useState("")
   const [fetchError, setFetchError] = useState<string | null>(null)
 
-  const load = useCallback(async (off: number) => {
-    setFetchError(null)
-    const params = new URLSearchParams({ limit: String(PAGE_SIZE), offset: String(off) })
+  useEffect(() => {
+    let cancelled = false
+    const params = new URLSearchParams({ limit: String(PAGE_SIZE), offset: String(offset) })
     if (status) params.set("status", status)
     if (from) params.set("from", from)
     if (to) params.set("to", to)
-    try {
-      const data = await fetch(`/api/transactions?${params}`).then((r) => r.json())
-      setRows(data.rows ?? [])
-      setHasMore((data.rows ?? []).length === PAGE_SIZE)
-    } catch {
-      setFetchError("Failed to load transactions. Please try again.")
-      setRows([])
-      setHasMore(false)
-    }
-  }, [status, from, to])
-
-  useEffect(() => {
-    setOffset(0)
-    load(0)
-  }, [load])
+    fetch(`/api/transactions?${params}`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (cancelled) return
+        setFetchError(null)
+        setRows(data.rows ?? [])
+        setHasMore((data.rows ?? []).length === PAGE_SIZE)
+      })
+      .catch(() => {
+        if (cancelled) return
+        setFetchError("Failed to load transactions. Please try again.")
+        setRows([])
+        setHasMore(false)
+      })
+    return () => { cancelled = true }
+  }, [status, from, to, offset])
 
   function prev() {
-    const o = Math.max(0, offset - PAGE_SIZE)
-    setOffset(o)
-    load(o)
+    setOffset((o) => Math.max(0, o - PAGE_SIZE))
   }
 
   function next() {
-    const o = offset + PAGE_SIZE
-    setOffset(o)
-    load(o)
+    setOffset((o) => o + PAGE_SIZE)
   }
 
   function exportCsv() {
@@ -89,7 +86,7 @@ export default function TransactionsPage() {
       <div className="flex flex-wrap gap-3 items-center">
         <select
           value={status}
-          onChange={(e) => setStatus(e.target.value)}
+          onChange={(e) => { setStatus(e.target.value); setOffset(0) }}
           className="rounded-md border border-white/10 bg-white/5 px-3 py-1.5 text-sm text-white"
           aria-label="Filter by status"
         >
@@ -104,7 +101,7 @@ export default function TransactionsPage() {
             id="from-date"
             type="date"
             value={from}
-            onChange={(e) => setFrom(e.target.value)}
+            onChange={(e) => { setFrom(e.target.value); setOffset(0) }}
             className="w-40 bg-white/5 border-white/10 text-white text-sm"
           />
         </div>
@@ -114,7 +111,7 @@ export default function TransactionsPage() {
             id="to-date"
             type="date"
             value={to}
-            onChange={(e) => setTo(e.target.value)}
+            onChange={(e) => { setTo(e.target.value); setOffset(0) }}
             className="w-40 bg-white/5 border-white/10 text-white text-sm"
           />
         </div>

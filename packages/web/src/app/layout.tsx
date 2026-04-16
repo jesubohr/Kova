@@ -1,9 +1,10 @@
 import type { Metadata } from "next"
 import "@/styles/globals.css"
-import { Geist } from "next/font/google"
+import { Manrope, Geist_Mono } from "next/font/google"
 import { cn } from "@/lib/utils"
 
-const geist = Geist({ subsets: ["latin"], variable: "--font-sans" })
+const manrope = Manrope({ subsets: ["latin"], variable: "--font-sans" })
+const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-mono" })
 
 export const metadata: Metadata = {
   title: "Kova — API Payments for the Agent Economy",
@@ -12,7 +13,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={cn("font-sans", geist.variable)}>
+    <html lang="en" className={cn("font-sans", manrope.variable, geistMono.variable)}>
       <body>{children}</body>
     </html>
   )

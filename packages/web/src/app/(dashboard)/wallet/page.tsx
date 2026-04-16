@@ -76,7 +76,7 @@ export default function WalletPage() {
             ) : (
               <>
                 <div className="text-3xl font-bold text-white">
-                  {wallet.balance !== null ? `${parseFloat(wallet.balance).toFixed(2)} USDC` : "Balance unavailable"}
+                  {wallet.balance !== null ? `${parseFloat(wallet.balance).toFixed(4)} USDC` : "Balance unavailable"}
                 </div>
                 {wallet.explorerUrl && (
                   <a
