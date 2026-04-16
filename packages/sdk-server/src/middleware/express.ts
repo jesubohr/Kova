@@ -41,7 +41,12 @@ export function kovaMiddleware(options: KovaServerOptions) {
       return
     }
 
-    const verification = await verifyPayment(payload, requirements)
+    const verification = await verifyPayment(
+      payload,
+      requirements,
+      options.apiKey,
+      { method: route.method, path: route.path },
+    )
     if (!verification.valid) {
       res.status(402).json(body402)
       return
@@ -49,7 +54,9 @@ export function kovaMiddleware(options: KovaServerOptions) {
 
     // Settle after response finishes (fire-and-forget)
     res.on("finish", () => {
-      settlePayment(payload, requirements)
+      if (verification.context) {
+        settlePayment(payload, requirements, verification.context)
+      }
     })
 
     next()

@@ -25,10 +25,19 @@ vi.mock("../stellar/client.js", () => ({
 vi.mock("../config.js", () => ({
   config: {
     stellarSecret: "SAEWWRK5IMZXDYQKOPXZ7UUC6LMKBR5WIV2DYJ2AF6TPBQ5YCK3V7AP3",
+    databaseUrl: "postgresql://test:test@localhost:5432/kova_test",
     port: 4021,
     network: "testnet",
     feePercent: 1.5,
     treasuryAddress: "GTREASURY1234567890123456789012345678901234567890123456",
+  },
+}))
+
+vi.mock("../db/connection.js", () => ({
+  db: {
+    insert: vi.fn().mockReturnValue({
+      values: vi.fn().mockReturnValue(Promise.resolve()),
+    }),
   },
 }))
 
@@ -69,6 +78,10 @@ const VALID_REQUEST = {
     payTo: "GPAY1234567890123456789012345678901234567890123456789012",
     facilitatorUrl: "http://localhost:4021",
     maxLedgerOffset: 12,
+  },
+  context: {
+    userId: "user-123",
+    endpointId: "endpoint-456",
   },
 }
 

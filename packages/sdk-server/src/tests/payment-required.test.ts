@@ -3,6 +3,7 @@ import { buildPaymentRequired } from "../x402/payment-required.js"
 import type { KovaServerOptions, RouteConfig } from "../config.js"
 
 const DEFAULT_OPTIONS: KovaServerOptions = {
+  apiKey: "kova_test_key_abc123",
   facilitatorUrl: "http://localhost:4021",
   payTo: "GPAY1234567890123456789012345678901234567890123456789012",
   network: "testnet",

@@ -16,6 +16,7 @@ import { settlePayment } from "../x402/settle.js"
 import type { KovaServerOptions } from "../config.js"
 
 const OPTIONS: KovaServerOptions = {
+  apiKey: "kova_test_key_abc123",
   facilitatorUrl: "http://localhost:4021",
   payTo: "GPAY1234567890123456789012345678901234567890123456789012",
   network: "testnet",
@@ -70,7 +71,10 @@ describe("kovaMiddleware (Express)", () => {
   })
 
   it("passes through and settles when verification succeeds", async () => {
-    vi.mocked(verifyPayment).mockResolvedValue({ valid: true })
+    vi.mocked(verifyPayment).mockResolvedValue({
+      valid: true,
+      context: { userId: "u1", endpointId: "e1" },
+    })
     vi.mocked(settlePayment).mockResolvedValue(undefined)
 
     const payment = Buffer.from(

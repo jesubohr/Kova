@@ -14,8 +14,8 @@ export interface RouteConfig {
 
 /** Options passed to kovaPlugin / kovaMiddleware */
 export interface KovaServerOptions {
-  /** API key for authenticating with the Kova dashboard (unused by middleware, forwarded in headers) */
-  apiKey?: string
+  /** API key for authenticating with the Kova platform */
+  apiKey: string
   /** Facilitator service URL (e.g. 'http://localhost:4021') */
   facilitatorUrl: string
   /** Stellar address to receive payments (G... format) */

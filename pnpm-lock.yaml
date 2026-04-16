@@ -73,9 +73,15 @@ importers:
       '@stellar/stellar-sdk':
         specifier: 15.0.1
         version: 15.0.1
+      drizzle-orm:
+        specifier: 0.45.2
+        version: 0.45.2(@opentelemetry/api@1.9.1)(kysely@0.28.16)(postgres@3.4.5)
       fastify:
         specifier: 5.8.0
         version: 5.8.0
+      postgres:
+        specifier: 3.4.5
+        version: 3.4.5
     devDependencies:
       '@types/node':
         specifier: 22.14.0

@@ -14,6 +14,7 @@ function optional(name: string, fallback: string): string {
 
 export const config = {
   stellarSecret: require("FACILITATOR_STELLAR_SECRET"),
+  databaseUrl: require("DATABASE_URL"),
   port: parseInt(optional("FACILITATOR_PORT", "4021"), 10),
   network: optional("STELLAR_NETWORK", "testnet") as StellarNetwork,
   feePercent: parseFloat(optional("KOVA_FEE_PERCENT", "1.5")),

@@ -18,6 +18,14 @@ vi.mock("../stellar/client.js", () => ({
   })),
 }))
 
+vi.mock("../auth/validate-api-key.js", () => ({
+  validateApiKey: vi.fn().mockResolvedValue({ valid: true, userId: "user-123" }),
+}))
+
+vi.mock("../auth/validate-endpoint.js", () => ({
+  validateEndpoint: vi.fn().mockResolvedValue({ valid: true, endpointId: "endpoint-456" }),
+}))
+
 import { verifyRoute } from "../routes/verify.js"
 import { verifyAuthEntry, AuthVerificationError } from "../stellar/verify-auth.js"
 
@@ -41,6 +49,8 @@ const VALID_REQUEST = {
     facilitatorUrl: "http://localhost:4021",
     maxLedgerOffset: 12,
   },
+  apiKey: "kova_test_key_abc123",
+  route: { method: "GET", path: "/api/weather" },
 }
 
 describe("POST /verify", () => {
@@ -67,7 +77,7 @@ describe("POST /verify", () => {
     })
 
     expect(res.statusCode).toBe(200)
-    expect(res.json()).toEqual({ valid: true })
+    expect(res.json()).toEqual({ valid: true, context: { userId: "user-123", endpointId: "endpoint-456" } })
   })
 
   it("returns valid=false with error when auth entry invalid", async () => {

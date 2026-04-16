@@ -34,7 +34,12 @@ const kovaPluginImpl: FastifyPluginAsync<KovaServerOptions> = async (fastify, op
       return reply.status(402).send(body402)
     }
 
-    const verification = await verifyPayment(payload, requirements)
+    const verification = await verifyPayment(
+      payload,
+      requirements,
+      options.apiKey,
+      { method: route.method, path: route.path },
+    )
     if (!verification.valid) {
       return reply.status(402).send(body402)
     }
@@ -42,7 +47,9 @@ const kovaPluginImpl: FastifyPluginAsync<KovaServerOptions> = async (fastify, op
     // Verification passed — settle after response (fire-and-forget)
     reply.then(
       () => {
-        settlePayment(payload, requirements)
+        if (verification.context) {
+          settlePayment(payload, requirements, verification.context)
+        }
       },
       () => undefined,
     )

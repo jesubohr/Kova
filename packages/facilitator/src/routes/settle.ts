@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto"
 import type { FastifyPluginAsync } from "fastify"
 import { Keypair } from "@stellar/stellar-sdk"
 import { verifyAuthEntry, AuthVerificationError } from "../stellar/verify-auth.js"
@@ -6,6 +7,8 @@ import { getRpcServer } from "../stellar/client.js"
 import { calculateFee } from "../fee/calculator.js"
 import { decimalToStroops } from "../utils.js"
 import { config } from "../config.js"
+import { db } from "../db/connection.js"
+import { transactions } from "../db/schema.js"
 import type { SettleRequest, SettleResponse } from "../types.js"
 
 function stroopsToDecimal(stroops: bigint): string {
@@ -24,7 +27,7 @@ export const settleRoute: FastifyPluginAsync = async (fastify) => {
       schema: {
         body: {
           type: "object",
-          required: ["payload", "requirements"],
+          required: ["payload", "requirements", "context"],
           properties: {
             payload: {
               type: "object",
@@ -46,12 +49,20 @@ export const settleRoute: FastifyPluginAsync = async (fastify) => {
                 network: { type: "string" },
               },
             },
+            context: {
+              type: "object",
+              required: ["userId", "endpointId"],
+              properties: {
+                userId: { type: "string" },
+                endpointId: { type: "string" },
+              },
+            },
           },
         },
       },
     },
     async (request, reply) => {
-      const { payload, requirements } = request.body
+      const { payload, requirements, context } = request.body
       const network = payload.network as "testnet" | "mainnet"
 
       const server = getRpcServer(network)
@@ -89,6 +100,21 @@ export const settleRoute: FastifyPluginAsync = async (fastify) => {
           facilitatorKeypair,
           network,
         })
+
+        // Log transaction to DB (non-blocking)
+        db.insert(transactions)
+          .values({
+            id: randomUUID(),
+            userId: context.userId,
+            endpointId: context.endpointId,
+            amount: stroopsToDecimal(verifiedAmount),
+            payerAddress: payload.from,
+            txHash,
+            status: "settled",
+          })
+          .then(() => {}, (err) => {
+            console.error("Failed to log transaction:", err)
+          })
 
         return reply.send({
           success: true,

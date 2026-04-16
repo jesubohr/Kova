@@ -2,6 +2,8 @@ import type { FastifyPluginAsync } from "fastify"
 import { verifyAuthEntry, AuthVerificationError } from "../stellar/verify-auth.js"
 import { getRpcServer } from "../stellar/client.js"
 import { decimalToStroops } from "../utils.js"
+import { validateApiKey } from "../auth/validate-api-key.js"
+import { validateEndpoint } from "../auth/validate-endpoint.js"
 import type { VerifyRequest, VerifyResponse } from "../types.js"
 
 export const verifyRoute: FastifyPluginAsync = async (fastify) => {
@@ -11,7 +13,7 @@ export const verifyRoute: FastifyPluginAsync = async (fastify) => {
       schema: {
         body: {
           type: "object",
-          required: ["payload", "requirements"],
+          required: ["payload", "requirements", "apiKey", "route"],
           properties: {
             payload: {
               type: "object",
@@ -33,13 +35,41 @@ export const verifyRoute: FastifyPluginAsync = async (fastify) => {
                 network: { type: "string" },
               },
             },
+            apiKey: { type: "string" },
+            route: {
+              type: "object",
+              required: ["method", "path"],
+              properties: {
+                method: { type: "string" },
+                path: { type: "string" },
+              },
+            },
           },
         },
       },
     },
     async (request, reply) => {
-      const { payload, requirements } = request.body
+      const { payload, requirements, apiKey, route } = request.body
 
+      // 1. Validate API key
+      const keyResult = await validateApiKey(apiKey)
+      if (!keyResult.valid) {
+        return reply.send({ valid: false, error: keyResult.error })
+      }
+
+      // 2. Validate endpoint + wallet match
+      const endpointResult = await validateEndpoint(
+        keyResult.userId!,
+        requirements.payTo,
+        route.method,
+        route.path,
+        requirements.maxAmountRequired,
+      )
+      if (!endpointResult.valid) {
+        return reply.send({ valid: false, error: endpointResult.error })
+      }
+
+      // 3. Verify Soroban auth entry
       const server = getRpcServer(payload.network as "testnet" | "mainnet")
       const { sequence: currentLedger } = await server.getLatestLedger()
 
@@ -52,7 +82,10 @@ export const verifyRoute: FastifyPluginAsync = async (fastify) => {
           minAmount: decimalToStroops(requirements.maxAmountRequired),
           currentLedger,
         })
-        return reply.send({ valid: true })
+        return reply.send({
+          valid: true,
+          context: { userId: keyResult.userId!, endpointId: endpointResult.endpointId! },
+        })
       } catch (err) {
         if (err instanceof AuthVerificationError) {
           return reply.send({ valid: false, error: err.message })

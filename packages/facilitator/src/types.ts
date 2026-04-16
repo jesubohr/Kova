@@ -48,22 +48,38 @@ export interface SettlementReceipt {
   fee: string // Kova fee taken (decimal string)
 }
 
+/** Route info forwarded by the SDK middleware */
+export interface RouteInfo {
+  method: string
+  path: string
+}
+
+/** Resolved context from API key + endpoint validation */
+export interface RequestContext {
+  userId: string
+  endpointId: string
+}
+
 /** POST /verify request body */
 export interface VerifyRequest {
   payload: PaymentPayload
   requirements: PaymentRequirements
+  apiKey: string
+  route: RouteInfo
 }
 
 /** POST /verify response body */
 export interface VerifyResponse {
   valid: boolean
   error?: string
+  context?: RequestContext
 }
 
 /** POST /settle request body */
 export interface SettleRequest {
   payload: PaymentPayload
   requirements: PaymentRequirements
+  context: RequestContext
 }
 
 /** POST /settle response body */

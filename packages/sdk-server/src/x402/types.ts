@@ -35,22 +35,38 @@ export interface PaymentPayload {
   from: string
 }
 
+/** Route info forwarded to the facilitator */
+export interface RouteInfo {
+  method: string
+  path: string
+}
+
+/** Resolved context from API key + endpoint validation */
+export interface RequestContext {
+  userId: string
+  endpointId: string
+}
+
 /** Body sent to facilitator POST /verify */
 export interface VerifyRequest {
   payload: PaymentPayload
   requirements: PaymentRequirements
+  apiKey: string
+  route: RouteInfo
 }
 
 /** Response from facilitator POST /verify */
 export interface VerifyResponse {
   valid: boolean
   error?: string
+  context?: RequestContext
 }
 
 /** Body sent to facilitator POST /settle */
 export interface SettleRequest {
   payload: PaymentPayload
   requirements: PaymentRequirements
+  context: RequestContext
 }
 
 /** Response from facilitator POST /settle */
